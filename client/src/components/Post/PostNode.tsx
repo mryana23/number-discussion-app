@@ -9,71 +9,69 @@ interface PostNodeProps {
   onOperationAdded: () => void;
 }
 
-const PostNode: React.FC<PostNodeProps> = ({
-  post,
-  children,
-  isAuthenticated,
-  onOperationAdded,
-}) => {
+const PostNode: React.FC<PostNodeProps> = ({ post, children, isAuthenticated, onOperationAdded }) => {
   const [showAddOperation, setShowAddOperation] = useState(false);
 
   const getDisplayText = () => {
     if (post.parentId === null) {
       return `${post.username} started with: ${post.startNumber}`;
+    } else {
+      return `${post.username}: ${post.operation} ${post.operand}`;
     }
-    return `${post.username}: ${post.operation} ${post.operand}`;
   };
 
   return (
-    <div style={{ marginLeft: post.parentId ? 30 : 0, marginBottom: 10 }}>
+    <div style={{ marginLeft: post.parentId ? '30px' : '0', marginBottom: '10px' }}>
       <div
         style={{
           border: '1px solid #ccc',
-          padding: 10,
-          borderRadius: 5,
+          padding: '10px',
+          borderRadius: '5px',
           backgroundColor: post.parentId === null ? '#e3f2fd' : '#fff',
         }}
       >
-        <div style={{ fontWeight: 'bold' }}>{getDisplayText()}</div>
-
-        <div style={{ fontSize: 22, margin: '5px 0' }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+          {getDisplayText()}
+        </div>
+        <div style={{ fontSize: '24px', color: '#333', marginBottom: '5px' }}>
           Result: {post.result}
         </div>
-
-        <div style={{ fontSize: 12, color: '#666' }}>
+        <div style={{ fontSize: '12px', color: '#666' }}>
           {new Date(post.createdAt).toLocaleString()}
         </div>
-
-        {isAuthenticated && (
-          <>
-            {!showAddOperation && (
-              <button
-                onClick={() => setShowAddOperation(true)}
-                style={{ marginTop: 10 }}
-              >
-                Reply
-              </button>
-            )}
-
-            {showAddOperation && (
-              <AddOperation
-                parentId={post.id}
-                onSuccess={() => {
-                  setShowAddOperation(false);
-                  onOperationAdded();
-                }}
-                onCancel={() => setShowAddOperation(false)}
-              />
-            )}
-          </>
+        {isAuthenticated && !showAddOperation && (
+          <button
+            onClick={() => setShowAddOperation(true)}
+            style={{
+              marginTop: '10px',
+              padding: '5px 10px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '3px',
+              cursor: 'pointer',
+              fontSize: '12px'
+            }}
+          >
+            Add Operation
+          </button>
+        )}
+        {showAddOperation && (
+          <AddOperation
+            parentId={post.id}
+            onSuccess={() => {
+              setShowAddOperation(false);
+              onOperationAdded();
+            }}
+            onCancel={() => setShowAddOperation(false)}
+          />
         )}
       </div>
-
-      {children.map(child => (
+      {children.map((child) => (
         <PostNode
           key={child.id}
           post={child}
-          children={[]} 
+          children={[]}
           isAuthenticated={isAuthenticated}
           onOperationAdded={onOperationAdded}
         />
