@@ -1,42 +1,52 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/auth';
+import postsRoutes from './routes/posts';
 
-// Load environment variables
-if (process.env.NODE_ENV !== 'production') {
-  dotenv.config();
-}
+dotenv.config();
 
 const app = express();
 
+// FIXED: PORT must be number
+const PORT = Number(process.env.PORT) || 5000;
+
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  credentials: true
+}));
 app.use(express.json());
 
-const PORT = Number(process.env.PORT) || 4000;
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postsRoutes);
 
-// Health check endpoint
-app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "OK",
-    timestamp: new Date().toISOString()
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    port: PORT,
+    timestamp: new Date().toISOString() 
   });
 });
 
 // Root endpoint
-app.get("/", (req, res) => {
-  res.status(200).json({ 
-    message: "Number Discussion API is running!",
-    environment: process.env.NODE_ENV || "development",
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Number Discussion API', 
+    status: 'running',
     port: PORT,
     endpoints: {
-      health: "/health"
+      health: '/health',
+      auth: '/api/auth/*',
+      posts: '/api/posts/*'
     }
   });
 });
 
-// IMPORTANT: Listen on 0.0.0.0 for Railway
+// Listen (Railway-compatible)
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Backend running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
 });
