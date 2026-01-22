@@ -13,27 +13,21 @@ const PostNode: React.FC<PostNodeProps> = ({
   isAuthenticated,
   onOperationAdded,
 }) => {
-  const [showAdd, setShowAdd] = useState(false);
-
+  const [showAddOperation, setShowAddOperation] = useState(false);
   const isRoot = node.parentId === null;
 
   return (
-    <div style={{ marginLeft: isRoot ? 0 : 30, position: 'relative' }}>
-      {/* vertical line */}
-      {!isRoot && (
-        <div
-          style={{
-            position: 'absolute',
-            left: -15,
-            top: 0,
-            bottom: 0,
-            width: 2,
-            backgroundColor: '#e0e0e0',
-          }}
-        />
-      )}
-
-       {/* HEADER */}
+    <div style={{ marginLeft: isRoot ? 0 : 30, marginTop: 16 }}>
+      <div
+        style={{
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: 10,
+          padding: 14,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.04)',
+        }}
+      >
+        {/* HEADER */}
         <div style={{ marginBottom: 6 }}>
           <strong>{node.username}</strong>{' '}
           {isRoot ? (
@@ -59,13 +53,51 @@ const PostNode: React.FC<PostNodeProps> = ({
         {/* RESULT */}
         <div style={{ fontSize: 15, marginBottom: 4 }}>
           Result:{' '}
-          <strong style={{ color: '#16a34a' }}>
-            {node.result}
-          </strong>
+          <strong style={{ color: '#16a34a' }}>{node.result}</strong>
         </div>
 
-      {/* children */}
-      {node.children.map(child => (
+        {/* TIME */}
+        <div style={{ fontSize: 12, color: '#9ca3af' }}>
+          {new Date(node.createdAt).toLocaleString()}
+        </div>
+
+        {/* ACTION */}
+        {isAuthenticated && (
+          <button
+            onClick={() => setShowAddOperation(!showAddOperation)}
+            style={{
+              marginTop: 10,
+              padding: '6px 10px',
+              borderRadius: 6,
+              border: 'none',
+              background: '#2563eb',
+              color: '#fff',
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            {showAddOperation ? 'Cancel' : 'Add Operation'}
+          </button>
+        )}
+
+        {/* ADD OPERATION FORM */}
+        {showAddOperation && (
+          <div style={{ marginTop: 10 }}>
+            <AddOperation
+                parentId={node.id}
+                onSuccess={() => {
+                    setShowAddOperation(false);
+                    onOperationAdded();
+                }}
+                onCancel={() => setShowAddOperation(false)}
+                />
+
+          </div>
+        )}
+      </div>
+
+      {/* CHILDREN */}
+      {node.children?.map(child => (
         <PostNode
           key={child.id}
           node={child}
