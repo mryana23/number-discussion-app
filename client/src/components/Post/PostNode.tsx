@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PostTreeNode } from '../../types';
-import AddOperation from '../Operation/AddOperation';
 
 interface PostNodeProps {
   node: PostTreeNode;
@@ -8,98 +7,78 @@ interface PostNodeProps {
   onOperationAdded: () => void;
 }
 
-const PostNode: React.FC<PostNodeProps> = ({
-  node,
-  isAuthenticated,
-  onOperationAdded,
-}) => {
-  const [showAdd, setShowAdd] = useState(false);
-
+const PostNode: React.FC<PostNodeProps> = ({ node, isAuthenticated, onOperationAdded }) => {
   const isRoot = node.parentId === null;
 
   return (
-    <div style={{ marginLeft: isRoot ? 0 : 30, position: 'relative' }}>
-      {/* vertical line */}
-      {!isRoot && (
-        <div
-          style={{
-            position: 'absolute',
-            left: -15,
-            top: 0,
-            bottom: 0,
-            width: 2,
-            backgroundColor: '#e0e0e0',
-          }}
-        />
-      )}
-
+    <div style={{ marginLeft: isRoot ? 0 : 30, marginTop: 16 }}>
+      {/* CARD */}
       <div
         style={{
-          background: isRoot ? '#e3f2fd' : '#ffffff',
-          border: '1px solid #ddd',
-          borderRadius: 8,
-          padding: 12,
-          marginTop: 12,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: 10,
+          padding: 14,
+          boxShadow: '0 4px 10px rgba(0,0,0,0.04)',
         }}
       >
-        <div style={{ fontWeight: 600, marginBottom: 4 }}>
-          {node.username}
+        {/* HEADER */}
+        <div style={{ marginBottom: 6 }}>
+          <strong>{node.username}</strong>{' '}
+          {isRoot ? (
+            <span style={{ color: '#6b7280' }}>
+              started with: <strong>{node.startNumber}</strong>
+            </span>
+          ) : (
+            <span
+              style={{
+                background: '#eef2ff',
+                color: '#4338ca',
+                padding: '2px 8px',
+                borderRadius: 6,
+                fontSize: 13,
+                marginLeft: 6,
+              }}
+            >
+              {node.operation} {node.operand}
+            </span>
+          )}
         </div>
 
-        <div style={{ fontSize: 14, marginBottom: 6 }}>
-          {isRoot
-            ? `Started with ${node.startNumber}`
-            : `${node.operation} ${node.operand}`}
+        {/* RESULT */}
+        <div style={{ fontSize: 15, marginBottom: 4 }}>
+          Result:{' '}
+          <strong style={{ color: '#16a34a' }}>
+            {node.result}
+          </strong>
         </div>
 
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 700,
-            color: '#1976d2',
-            marginBottom: 6,
-          }}
-        >
-          {node.result}
-        </div>
-
-        <div style={{ fontSize: 11, color: '#777' }}>
+        {/* TIME */}
+        <div style={{ fontSize: 12, color: '#9ca3af' }}>
           {new Date(node.createdAt).toLocaleString()}
         </div>
 
-        {isAuthenticated && !showAdd && (
+        {/* ACTION */}
+        {isAuthenticated && (
           <button
-            onClick={() => setShowAdd(true)}
             style={{
-              marginTop: 8,
-              padding: '4px 10px',
-              fontSize: 12,
-              background: '#1976d2',
-              color: '#fff',
+              marginTop: 10,
+              padding: '6px 10px',
+              borderRadius: 6,
               border: 'none',
-              borderRadius: 4,
+              background: '#2563eb',
+              color: '#fff',
+              fontSize: 13,
               cursor: 'pointer',
             }}
           >
-            Reply
+            Add Operation
           </button>
-        )}
-
-        {showAdd && (
-          <AddOperation
-            parentId={node.id}
-            onSuccess={() => {
-              setShowAdd(false);
-              onOperationAdded();
-            }}
-            onCancel={() => setShowAdd(false)}
-          />
         )}
       </div>
 
-      {/* children */}
-      {node.children.map(child => (
+      {/* CHILDREN */}
+      {node.children?.map(child => (
         <PostNode
           key={child.id}
           node={child}
