@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-// Load .env only in development
+// Load environment variables
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
@@ -15,7 +15,7 @@ app.use(express.json());
 
 const PORT = Number(process.env.PORT) || 4000;
 
-// Health check
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ 
     status: "OK",
@@ -26,13 +26,16 @@ app.get("/health", (req, res) => {
 // Root endpoint
 app.get("/", (req, res) => {
   res.status(200).json({ 
-    message: "Backend is running!",
+    message: "Number Discussion API is running!",
     environment: process.env.NODE_ENV || "development",
-    port: PORT
+    port: PORT,
+    endpoints: {
+      health: "/health"
+    }
   });
 });
 
-// Listen on 0.0.0.0 for Railway
+// IMPORTANT: Listen on 0.0.0.0 for Railway
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Backend running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
