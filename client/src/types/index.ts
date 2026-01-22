@@ -5,14 +5,17 @@ export interface User {
 
 export interface Post {
   id: string;
-  userId: string;
+  parentId: string | null;
   username: string;
   startNumber?: number;
   operation?: '+' | '-' | '*' | '/';
   operand?: number;
-  parentId: string | null;
   result: number;
   createdAt: string;
+}
+
+export interface PostTreeNode extends Post {
+  children: PostTreeNode[];
 }
 
 export interface AuthResponse {

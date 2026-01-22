@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Post } from '../../types';
+import { Post, PostTreeNode } from '../../types';
 import { postsAPI } from '../../services/api';
 import PostNode from './PostNode';
 
@@ -8,17 +8,21 @@ interface PostTreeProps {
   refreshTrigger: number;
 }
 
-const PostTree: React.FC<PostTreeProps> = ({ isAuthenticated, refreshTrigger }) => {
+const PostTree: React.FC<PostTreeProps> = ({
+  isAuthenticated,
+  refreshTrigger,
+}) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const fetchPosts = async () => {
     try {
+      setLoading(true);
       const data = await postsAPI.getAllPosts();
       setPosts(data);
       setError('');
-    } catch (err) {
+    } catch {
       setError('Failed to load posts');
     } finally {
       setLoading(false);
@@ -29,45 +33,37 @@ const PostTree: React.FC<PostTreeProps> = ({ isAuthenticated, refreshTrigger }) 
     fetchPosts();
   }, [refreshTrigger]);
 
-  const buildTree = () => {
-    const rootPosts = posts.filter(p => p.parentId === null);
-    
-    const getChildren = (parentId: string): Post[] => {
-      return posts.filter(p => p.parentId === parentId);
-    };
+  const buildTree = (): PostTreeNode[] => {
+    const map = new Map<string, PostTreeNode>();
 
-    return rootPosts.map(root => ({
-      post: root,
-      children: getChildren(root.id)
-    }));
+    posts.forEach((p) => {
+      map.set(p.id, { ...p, children: [] });
+    });
+
+    const roots: PostTreeNode[] = [];
+
+    map.forEach((post) => {
+      if (post.parentId) {
+        map.get(post.parentId)?.children.push(post);
+      } else {
+        roots.push(post);
+      }
+    });
+
+    return roots;
   };
 
-  if (loading) {
-    return <div style={{ padding: '20px' }}>Loading posts...</div>;
-  }
-
-  if (error) {
-    return <div style={{ padding: '20px', color: 'red' }}>{error}</div>;
-  }
-
-  const tree = buildTree();
-
-  if (tree.length === 0) {
-    return (
-      <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-        No posts yet. {isAuthenticated && 'Start a new calculation chain!'}
-      </div>
-    );
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={{ color: 'red' }}>{error}</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <h2>Calculation Trees</h2>
-      {tree.map(({ post, children }) => (
+      {buildTree().map((root) => (
         <PostNode
-          key={post.id}
-          post={post}
-          children={children}
+          key={root.id}
+          post={root}
+          children={root.children}
           isAuthenticated={isAuthenticated}
           onOperationAdded={fetchPosts}
         />
